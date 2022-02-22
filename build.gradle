@@ -1,0 +1,80 @@
+allprojects {
+    group = "com.sxtanna.mc"
+    version = "1.0.0-SNAPSHOT"
+}
+
+subprojects {
+    apply plugin: "java-library"
+    
+    apply plugin: "signing"
+    apply plugin: "maven-publish"
+    
+    
+    repositories {
+        mavenCentral()
+    
+        maven {
+            url = uri("https://papermc.io/repo/repository/maven-public/")
+        }
+    }
+    
+    
+    dependencies {
+        compileOnly("org.jetbrains:annotations:22.0.0")
+    
+        compileOnly("org.spigotmc:spigot-api:1.18.1-R0.1-SNAPSHOT")
+        
+        testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+    }
+    
+    
+    test {
+        useJUnitPlatform()
+    }
+    
+    configurations {
+        testImplementation.extendsFrom(compileOnly)
+    }
+    
+    tasks.withType(JavaCompile) {
+        options.encoding = "UTF-8"
+        
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    
+    publishing {
+        repositories {
+            maven {
+                url = uri("https://maven.pkg.github.com/Sxtanna/element-messaging")
+                
+                credentials {
+                    username = project.hasProperty("githubPackagesUser") ? githubPackagesUser : System.env["SXTANNA_PACKAGES_USER"] != null ? System.getenv("SXTANNA_PACKAGES_USER") : System.getenv("GITHUB_ACTOR")
+                    password = project.hasProperty("githubPackagesAuth") ? githubPackagesAuth : System.env["SXTANNA_PACKAGES_AUTH"] != null ? System.getenv("SXTANNA_PACKAGES_AUTH") : System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+        
+        publications {
+            mavenJava(MavenPublication) {
+                groupId = project.group
+                artifactId = project.name
+                version = project.version
+                
+                from components.java
+            }
+        }
+    }
+    
+    signing {
+        if (System.env["ORG_GRADLE_PROJECT_signingKey"] != null) {
+            def signingKey = System.env["ORG_GRADLE_PROJECT_signingKey"].replace("\\n", "\n")
+            def signingPassword = System.env["ORG_GRADLE_PROJECT_signingPassword"]
+            
+            useInMemoryPgpKeys(signingKey, signingPassword)
+        }
+        
+        sign publishing.publications.mavenJava
+    }
+}

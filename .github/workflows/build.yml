@@ -1,0 +1,33 @@
+name: Build Plugin
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Initialize JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '16'
+          cache: 'gradle'
+
+      - name: Ensure Gradlew is Executable
+        run: chmod +x ./gradlew
+
+      - name: Publish Gradle Project
+        env:
+          SXTANNA_PACKAGES_USER: ${{ secrets.SXTANNA_PACKAGES_USER }}
+          SXTANNA_PACKAGES_AUTH: ${{ secrets.SXTANNA_PACKAGES_AUTH }}
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SXTANNA_GPG_KEY_DATA }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SXTANNA_GPG_KEY_AUTH }}
+        run: ./gradlew publish
+
+      - name: Cleanup Gradle Cache
+        run: |
+          rm -f ~/.gradle/caches/modules-2/modules-2.lock
+          rm -f ~/.gradle/caches/modules-2/gc.properties

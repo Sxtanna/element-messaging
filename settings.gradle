@@ -1,0 +1,4 @@
+rootProject.name = 'element-messaging'
+include 'element-messaging-core'
+include 'element-messaging-impl-mysql'
+

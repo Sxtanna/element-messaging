@@ -1,0 +1,6 @@
+dependencies {
+	api(project(":element-messaging-core"))
+	
+	implementation("com.zaxxer:HikariCP:5.0.1")
+	implementation("org.mariadb.jdbc:mariadb-java-client:2.7.3")
+}
